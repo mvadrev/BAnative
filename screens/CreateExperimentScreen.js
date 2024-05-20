@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
+import { useNavigation } from "@react-navigation/native"; // Import useNavigation
 import {
   StyleSheet,
   Text,
@@ -11,7 +12,6 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { AsyncStorage } from "react-native";
 import { Client, Message } from "paho-mqtt";
 
 const schema = yup.object().shape({
@@ -38,77 +38,38 @@ export default function CreateExperimentScreen() {
     resolver: yupResolver(schema),
   });
 
-  const [client, setClient] = useState(null);
-
-  // const mqttClient = new Client({
-  //   uri: "b29ed685441749cd86432c8680b3fb1a:8883",
-  //   clientId: "clientId-" + Math.random().toString(16).substr(2, 8),
-  //   userName: "mukund",
-  //   password: "Qwerty@123",
-  //   useSSL: true,
-  // });
-
-  //Set up an in-memory alternative to global localStorage
-  const myStorage = {
-    setItem: (key, item) => {
-      myStorage[key] = item;
-    },
-    getItem: (key) => myStorage[key],
-    removeItem: (key) => {
-      delete myStorage[key];
-    },
-  };
-
-  useEffect(() => {
-    const brokerUrl = "b29ed685441749cd86432c8680b3fb1a.s2.eu.hivemq.cloud";
-    const port = 8884; // WebSocket secure port for HiveMQ Cloud
-    const clientId = "clientId-" + Math.random().toString(16).substr(2, 8);
-    const mqttClient = new Client(`wss://${brokerUrl}:${port}/mqtt`, clientId);
-
-    mqttClient.connect({
-      useSSL: true,
-      userName: "vadrev",
-      password: "Qwerty@123",
-      onSuccess: () => {
-        console.log("Connected to MQTT broker");
-        setClient(mqttClient);
-        if (mqttClient.isConnected()) {
-          console.log("MQTT client is connected");
-        } else {
-          console.log("MQTT client is not connected");
-        }
-      },
-      onFailure: (error) => {
-        console.log("Connection failed:", error.errorMessage);
-      },
-    });
-
-    mqttClient.onConnectionLost = (responseObject) => {
-      if (responseObject.errorCode !== 0) {
-        console.log("onConnectionLost:", responseObject.errorMessage);
-      }
-    };
-
-    mqttClient.onMessageArrived = (message) => {
-      console.log("onMessageArrived:", message.payloadString);
-    };
-
-    return () => {
-      if (mqttClient && mqttClient.isConnected()) {
-        mqttClient.disconnect();
-      }
-    };
-  }, []);
+  const navigation = useNavigation(); // Hook for navigation
 
   const onSubmit = (data) => {
-    if (client) {
-      const message = new Message(JSON.stringify(data));
-      message.destinationName = "your/topic/here";
-      client.send(message);
-      console.log("Message sent to topic: your/topic/here", data);
-    } else {
-      console.log("MQTT client is not connected");
-    }
+    // if (client) {
+    // Publish the "start" message to the controlTopic
+    const startMessage = new Message("start");
+    // startMessage.destinationName = "controlTopic";
+    // client.send(startMessage);
+    // console.log("Start message sent to topic: controlTopic");
+
+    // // Subscribe to the experiment topic
+    // client.subscribe("experiment", {
+    //   onSuccess: () => {
+    //     console.log("Subscribed to topic: experiment");
+
+    //     // Publish the form data to the experiment topic
+    //     const experimentMessage = new Message(JSON.stringify(data));
+    //     experimentMessage.destinationName = "experiment";
+    //     client.send(experimentMessage);
+    //     console.log("Message sent to topic: experiment", data);
+
+    //     // Navigate to the ExperimentGraph screen and pass the client
+    // navigation.navigate("Experiments", { client });
+    navigation.navigate("Experiment", { formData: data });
+    //     },
+    //     onFailure: (error) => {
+    //       console.log("Subscription failed:", error.errorMessage);
+    //     },
+    //   });
+    // } else {
+    //   console.log("MQTT client is not connected");
+    // }
   };
 
   return (

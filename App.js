@@ -8,6 +8,7 @@ import DashboardScreen from "./screens/DashboardScreen";
 import CreateExperiment from "./screens/CreateExperimentScreen";
 import { createStackNavigator } from "@react-navigation/stack";
 import CreateExperimentScreen from "./screens/CreateExperimentScreen";
+import Experiment from "./screens/Experiment";
 
 const Drawer = createDrawerNavigator();
 
@@ -25,6 +26,7 @@ const DashBoardRoutes = () => {
         name="createExperiment"
         component={CreateExperimentScreen}
       ></Stack.Screen>
+      <Stack.Screen name="Experiment" component={Experiment}></Stack.Screen>
     </Stack.Navigator>
   );
 };
